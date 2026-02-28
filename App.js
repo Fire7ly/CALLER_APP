@@ -11,9 +11,8 @@ import {
   saveContacts,
   loadGridCols,
   saveGridCols,
-  loadAvatarSize,
-  saveAvatarSize,
 } from "./src/utils/storage";
+import { checkForUpdates } from "./src/utils/UpdateManager";
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
@@ -42,6 +41,11 @@ export default function App() {
         setGridLayout(g);
       }
     })();
+  }, []);
+
+  // Check for updates on mount
+  useEffect(() => {
+    checkForUpdates();
   }, []);
 
   // ---- Handlers ----
