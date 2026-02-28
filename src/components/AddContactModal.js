@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   Image,
+  FlatList,
   Alert,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
@@ -99,6 +100,7 @@ export default function AddContactModal({ visible, onClose, onSave }) {
     setName("");
     setPhone("");
     setPhoto(null);
+    setShowPicker(false);
     onClose();
   };
 
@@ -106,6 +108,7 @@ export default function AddContactModal({ visible, onClose, onSave }) {
     setName("");
     setPhone("");
     setPhoto(null);
+    setShowPicker(false);
     onClose();
   };
 
@@ -122,13 +125,15 @@ export default function AddContactModal({ visible, onClose, onSave }) {
           style={{ maxHeight: "80%" }}
         >
           {showPicker ? (
-            <View className="flex-1">
+            <View style={{ height: 450, width: "100%" }}>
               <Text className="text-accent-light text-lg font-bold text-center mb-5">
                 Select a Contact
               </Text>
               <FlatList
                 data={contactsList}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) =>
+                  item.id ? item.id.toString() : index.toString()
+                }
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
                   <TouchableOpacity
