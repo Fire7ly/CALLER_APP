@@ -141,20 +141,20 @@ export default function AddContactModal({ visible, onClose, onSave }) {
                     onPress={() => selectContact(item)}
                   >
                     <View className="w-10 h-10 rounded-full bg-accent/20 items-center justify-center mr-3 overflow-hidden">
-                      {item.imageAvailable && item.image ? (
+                      {item.imageAvailable && item.image && item.image.uri ? (
                         <Image
                           source={{ uri: item.image.uri }}
                           className="w-full h-full"
                         />
                       ) : (
                         <Text className="text-accent font-bold text-lg">
-                          {(item.name || "?")[0].toUpperCase()}
+                          {(item.name ? item.name[0] : "?").toUpperCase()}
                         </Text>
                       )}
                     </View>
                     <View>
                       <Text className="text-white font-semibold">
-                        {item.name}
+                        {item.name || "Unknown Contact"}
                       </Text>
                       {item.phoneNumbers && item.phoneNumbers[0] && (
                         <Text className="text-text-muted text-xs mt-1">

@@ -17,28 +17,53 @@ import {
 
 export default function App() {
   const [contacts, setContacts] = useState([]);
-  const [gridCols, setGridCols] = useState(3);
-  const [avatarSize, setAvatarSize] = useState(80);
+  const [gridLayout, setGridLayout] = useState({
+    cols: 3,
+    rows: 3,
+    label: "3×3",
+  });
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
   // Load stored data on mount
   useEffect(() => {
     (async () => {
-      const [c, g, a] = await Promise.all([
-        loadContacts(),
-        loadGridCols(),
-        loadAvatarSize(),
-      ]);
+      const [c, g] = await Promise.all([loadContacts(), loadGridCols()]);
       setContacts(c);
-      setGridCols(g);
-      setAvatarSize(a);
+
+      // Migrate old integer data if needed
+      if (typeof g === "number") {
+        const defaultLayout = {
+          cols: g,
+          label: g === 3 ? "3×3" : g === 4 ? "4×4" : `${g}×${g}`,
+        };
+        setGridLayout(defaultLayout);
+      } else if (g && g.cols) {
+        setGridLayout(g);
+      }
     })();
   }, []);
 
   // ---- Handlers ----
   const handleAddContact = useCallback(
     async (contact) => {
+      // Normalize phone numbers for accurate comparison (strip non-digits)
+      const cleanPhone = (phone) => (phone || "").replace(/\D/g, "");
+      const newPhoneClean = cleanPhone(contact.phone);
+
+      // Check if contact already exists
+      const isDuplicate = contacts.some(
+        (c) => cleanPhone(c.phone) === newPhoneClean && newPhoneClean !== "",
+      );
+
+      if (isDuplicate) {
+        Alert.alert(
+          "Duplicate Contact",
+          `${contact.name} is already in your grid!`,
+        );
+        return;
+      }
+
       const updated = [...contacts, contact];
       setContacts(updated);
       await saveContacts(updated);
@@ -68,14 +93,9 @@ export default function App() {
     [contacts],
   );
 
-  const handleGridChange = useCallback(async (cols) => {
-    setGridCols(cols);
-    await saveGridCols(cols);
-  }, []);
-
-  const handleAvatarSizeChange = useCallback(async (size) => {
-    setAvatarSize(size);
-    await saveAvatarSize(size);
+  const handleGridChange = useCallback(async (layout) => {
+    setGridLayout(layout);
+    await saveGridCols(layout);
   }, []);
 
   const handleClearAll = useCallback(async () => {
@@ -102,8 +122,7 @@ export default function App() {
       <SafeAreaView edges={["top"]} className="flex-1 pt-14">
         <ContactGrid
           contacts={contacts}
-          gridCols={gridCols}
-          avatarSize={avatarSize}
+          gridCols={gridLayout.cols}
           onLongPressContact={handleDeleteContact}
         />
       </SafeAreaView>
@@ -135,10 +154,8 @@ export default function App() {
       <SettingsPanel
         visible={showSettings}
         onClose={() => setShowSettings(false)}
-        gridCols={gridCols}
+        gridCols={gridLayout}
         onGridChange={handleGridChange}
-        avatarSize={avatarSize}
-        onAvatarSizeChange={handleAvatarSizeChange}
         onClearAll={handleClearAll}
       />
     </View>

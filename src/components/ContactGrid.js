@@ -23,7 +23,8 @@ function getInitials(name) {
     .slice(0, 2);
 }
 
-function ContactCard({ contact, avatarSize, onLongPress }) {
+function ContactCard({ contact, itemWidth }) {
+  const avatarSize = itemWidth - 14; // Auto-scale to fill most of the column width
   const handleCall = async () => {
     const phone = contact.phone.replace(/\s+/g, "");
 
@@ -57,8 +58,6 @@ function ContactCard({ contact, avatarSize, onLongPress }) {
   return (
     <TouchableOpacity
       onPress={handleCall}
-      onLongPress={() => onLongPress(contact)}
-      delayLongPress={500}
       activeOpacity={0.7}
       className="items-center mb-4"
     >
@@ -107,13 +106,9 @@ function ContactCard({ contact, avatarSize, onLongPress }) {
   );
 }
 
-export default function ContactGrid({
-  contacts,
-  gridCols,
-  avatarSize,
-  onLongPressContact,
-}) {
-  const itemWidth = (SCREEN_WIDTH - 40) / gridCols;
+export default function ContactGrid({ contacts, gridCols }) {
+  const numCols = Math.max(2, parseInt(gridCols) || 3);
+  const itemWidth = (SCREEN_WIDTH - 40) / numCols;
 
   if (contacts.length === 0) {
     return (
@@ -134,19 +129,19 @@ export default function ContactGrid({
     <FlatList
       data={contacts}
       keyExtractor={(item) => item.id}
-      numColumns={gridCols}
-      key={`grid-${gridCols}`}
+      numColumns={numCols}
+      key={`grid-${numCols}`}
       contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16 }}
-      columnWrapperStyle={{ justifyContent: "flex-start" }}
-      renderItem={({ item }) => (
-        <View style={{ width: itemWidth, alignItems: "center" }}>
-          <ContactCard
-            contact={item}
-            avatarSize={avatarSize}
-            onLongPress={onLongPressContact}
-          />
-        </View>
-      )}
+      columnWrapperStyle={numCols > 1 ? { justifyContent: "flex-start" } : null}
+      renderItem={({ item }) => {
+        return (
+          <View
+            style={{ width: itemWidth, alignItems: "center", marginBottom: 12 }}
+          >
+            <ContactCard contact={item} itemWidth={itemWidth} />
+          </View>
+        );
+      }}
     />
   );
 }

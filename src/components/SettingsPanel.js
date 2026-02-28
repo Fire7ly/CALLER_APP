@@ -11,11 +11,21 @@ export default function SettingsPanel({
   onAvatarSizeChange,
   onClearAll,
 }) {
-  const gridOptions = [
-    { cols: 3, label: "3×3" },
-    { cols: 4, label: "4×3", rows: 3 },
-    { cols: 4, label: "4×4", rows: 4 },
-  ];
+  const [tempCols, setTempCols] = React.useState(gridCols?.cols || 3);
+  const [tempRows, setTempRows] = React.useState(gridCols?.rows || 3);
+
+  React.useEffect(() => {
+    setTempCols(gridCols?.cols || 3);
+    setTempRows(gridCols?.rows || 3);
+  }, [gridCols, visible]);
+
+  const handleApplyGrid = () => {
+    onGridChange({
+      cols: tempCols,
+      rows: tempRows,
+      label: `${tempCols}×${tempRows}`,
+    });
+  };
 
   const handleClearAll = () => {
     Alert.alert("Clear All Contacts", "Are you sure? This cannot be undone.", [
@@ -60,57 +70,73 @@ export default function SettingsPanel({
             </TouchableOpacity>
           </View>
 
-          {/* Grid Layout */}
-          <View className="mb-6">
-            <Text className="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-3">
+          {/* Custom Grid Controls */}
+          <View className="mb-8">
+            <Text className="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-4">
               Grid Layout
             </Text>
-            <View className="flex-row gap-2">
-              {gridOptions.map((opt) => (
+
+            {/* Columns Stepper */}
+            <View className="flex-row items-center justify-between mb-4 bg-white/5 rounded-xl p-3 border border-white/5">
+              <Text className="text-text-muted font-bold ml-2">Columns</Text>
+              <View className="flex-row items-center gap-4">
                 <TouchableOpacity
-                  key={opt.label}
-                  onPress={() => onGridChange(opt.cols)}
-                  className={`flex-1 py-2.5 rounded-xl border items-center ${
-                    gridCols === opt.cols
-                      ? "border-accent bg-accent/20"
-                      : "border-white/10 bg-white/5"
-                  }`}
+                  onPress={() => setTempCols((c) => Math.max(1, c - 1))}
+                  className="w-8 h-8 rounded-full bg-white/10 items-center justify-center"
                 >
-                  <Text
-                    className={`text-xs font-bold ${
-                      gridCols === opt.cols
-                        ? "text-accent-light"
-                        : "text-text-muted"
-                    }`}
-                  >
-                    {opt.label}
+                  <Text className="text-white text-lg font-bold leading-none">
+                    -
                   </Text>
                 </TouchableOpacity>
-              ))}
+                <Text className="text-accent-light font-bold text-lg w-4 text-center">
+                  {tempCols}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setTempCols((c) => Math.min(8, c + 1))}
+                  className="w-8 h-8 rounded-full bg-white/10 items-center justify-center"
+                >
+                  <Text className="text-white text-lg font-bold leading-none">
+                    +
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
 
-          {/* Avatar Size */}
-          <View className="mb-6">
-            <Text className="text-text-secondary text-[10px] font-bold uppercase tracking-widest mb-3">
-              Avatar Size
-            </Text>
-            <View className="flex-row items-center gap-3">
-              <Slider
-                style={{ flex: 1, height: 40 }}
-                minimumValue={50}
-                maximumValue={120}
-                step={5}
-                value={avatarSize}
-                onValueChange={onAvatarSizeChange}
-                minimumTrackTintColor="#6c5ce7"
-                maximumTrackTintColor="rgba(255,255,255,0.1)"
-                thumbTintColor="#a29bfe"
-              />
-              <Text className="text-accent-light text-xs font-bold w-10 text-right">
-                {avatarSize}px
-              </Text>
+            {/* Rows Stepper */}
+            <View className="flex-row items-center justify-between mb-4 bg-white/5 rounded-xl p-3 border border-white/5">
+              <Text className="text-text-muted font-bold ml-2">Rows</Text>
+              <View className="flex-row items-center gap-4">
+                <TouchableOpacity
+                  onPress={() => setTempRows((r) => Math.max(1, r - 1))}
+                  className="w-8 h-8 rounded-full bg-white/10 items-center justify-center"
+                >
+                  <Text className="text-white text-lg font-bold leading-none">
+                    -
+                  </Text>
+                </TouchableOpacity>
+                <Text className="text-accent-light font-bold text-lg w-4 text-center">
+                  {tempRows}
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setTempRows((r) => Math.min(12, r + 1))}
+                  className="w-8 h-8 rounded-full bg-white/10 items-center justify-center"
+                >
+                  <Text className="text-white text-lg font-bold leading-none">
+                    +
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
+
+            {/* Apply Button */}
+            {(tempCols !== gridCols?.cols || tempRows !== gridCols?.rows) && (
+              <TouchableOpacity
+                onPress={handleApplyGrid}
+                className="py-3 mt-2 rounded-xl bg-accent items-center"
+              >
+                <Text className="text-white font-bold">Apply Changes</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Clear All */}

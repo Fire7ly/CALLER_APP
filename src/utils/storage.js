@@ -22,14 +22,25 @@ export async function saveContacts(contacts) {
 export async function loadGridCols() {
   try {
     const data = await AsyncStorage.getItem(GRID_KEY);
-    return data ? parseInt(data, 10) : 3;
+    if (!data) return { cols: 3, label: "3×3" };
+
+    // Check if it's the old integer format
+    if (!data.startsWith("{")) {
+      const g = parseInt(data, 10);
+      return {
+        cols: g,
+        label: g === 3 ? "3×3" : g === 4 ? "4×4" : `${g}×${g}`,
+      };
+    }
+
+    return JSON.parse(data);
   } catch {
-    return 3;
+    return { cols: 3, label: "3×3" };
   }
 }
 
-export async function saveGridCols(cols) {
-  await AsyncStorage.setItem(GRID_KEY, String(cols));
+export async function saveGridCols(layoutObj) {
+  await AsyncStorage.setItem(GRID_KEY, JSON.stringify(layoutObj));
 }
 
 // ---- Avatar Size ----
