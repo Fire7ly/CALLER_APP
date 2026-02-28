@@ -5,19 +5,25 @@ import { Alert, Platform } from "react-native";
 
 const GITHUB_USER = "Fire7ly";
 const GITHUB_REPO = "CALLER_APP";
-const CURRENT_VERSION = Constants.expoConfig.version;
+const CURRENT_VERSION =
+  Constants.expoConfig?.version ?? require("../../package.json").version;
 
 export const checkForUpdates = async (manual = false) => {
   try {
+    console.log("[UpdateManager] Current version:", CURRENT_VERSION);
+
     const response = await fetch(
       `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/releases/latest`,
     );
     const data = await response.json();
 
     if (data.tag_name) {
-      const latestVersion = data.tag_name.replace("v", "");
+      // Strip 'v' prefix for clean comparison
+      const latestVersion = data.tag_name.replace(/^v/, "");
+      console.log("[UpdateManager] Latest GitHub version:", latestVersion);
 
       if (isNewerVersion(latestVersion, CURRENT_VERSION)) {
+        console.log("[UpdateManager] Update available!");
         const apkAsset = data.assets.find((asset) =>
           asset.name.endsWith(".apk"),
         );
@@ -25,11 +31,20 @@ export const checkForUpdates = async (manual = false) => {
           showUpdatePrompt(latestVersion, apkAsset.browser_download_url);
         }
       } else if (manual) {
-        Alert.alert("No Updates", "You are on the latest version.");
+        Alert.alert(
+          "No Updates",
+          `You are on the latest version (${CURRENT_VERSION}).`,
+        );
       }
     }
   } catch (error) {
-    console.error("Update check failed:", error);
+    console.error("[UpdateManager] Update check failed:", error);
+    if (manual) {
+      Alert.alert(
+        "Update Check Failed",
+        "Could not check for updates. Please check your internet connection.",
+      );
+    }
   }
 };
 
