@@ -3,8 +3,8 @@ import * as Linking from "expo-linking";
 import Constants from "expo-constants";
 import { Alert, Platform } from "react-native";
 
-const GITHUB_USER = "YOUR_GITHUB_USER"; // User will fill this
-const GITHUB_REPO = "YOUR_GITHUB_REPO"; // User will fill this
+const GITHUB_USER = "Fire7ly";
+const GITHUB_REPO = "CALLER_APP";
 const CURRENT_VERSION = Constants.expoConfig.version;
 
 export const checkForUpdates = async (manual = false) => {

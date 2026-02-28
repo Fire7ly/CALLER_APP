@@ -27,28 +27,24 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Setup Expo
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
+      # We don't need Expo Login for local android builds if the folder is committed
       - name: Build Android Release
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --stacktrace
 
       - name: Get Version
-        id: package-version
+        id: pkg
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
           files: android/app/build/outputs/apk/release/app-release.apk
-          tag_name: v${{ steps.package-version.outputs.version }}
-          name: Release v${{ steps.package-version.outputs.version }}
+          tag_name: v${{ steps.pkg.outputs.version }}-${{ github.run_number }}
+          name: Release v${{ steps.pkg.outputs.version }} (Build ${{ github.run_number }})
           draft: false
           prerelease: false
         env:
