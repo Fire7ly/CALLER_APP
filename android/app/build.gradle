@@ -85,8 +85,8 @@ def packageJson = new groovy.json.JsonSlurper().parseText(
     new File(projectRoot, "package.json").text
 )
 def appVersionName = packageJson.version
-def appVersionCode = appVersionName.tokenize('.').collect { it.toInteger() }
-    .inject(0) { result, v -> result * 1000 + v }  // e.g. 1.0.1 -> 1000001
+def vParts = appVersionName.tokenize('.').collect { it.toInteger() }
+def appVersionCode = vParts[0] * 10000 + vParts[1] * 100 + vParts[2]  // e.g. 1.0.1 -> 10001
 
 android {
     ndkVersion rootProject.ext.ndkVersion
